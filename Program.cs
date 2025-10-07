@@ -1,10 +1,14 @@
 using System.Text;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using TaskManagerApp.Data;
+using TaskManagerApp.DTOs;
 using TaskManagerApp.Services.Implementations;
 using TaskManagerApp.Services.Interfaces;
+using TaskManagerApp.Validations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +16,14 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers();
+
+// Add FluentValidation 
+builder.Services.AddFluentValidationAutoValidation()
+                .AddFluentValidationClientsideAdapters();
+
+// Register all validators (very important)
+builder.Services.AddValidatorsFromAssemblyContaining<UserRegisterValidator>();
+
 
 // Configure Entity Framework Core with SQL Server
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -49,7 +61,6 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddAuthorization();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-
 
 
 
