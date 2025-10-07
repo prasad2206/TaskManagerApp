@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using TaskManagerApp.Data;
 using TaskManagerApp.DTOs;
-using TaskManagerApp.Helpers;
 using TaskManagerApp.Models;
 using TaskManagerApp.Services.Interfaces;
 
@@ -12,12 +11,13 @@ namespace TaskManagerApp.Services.Implementations
     {
         private readonly AppDbContext _context;
 
-        private readonly JwtService _jwtService;
-        public UserService(AppDbContext context, JwtService jwtService)
+        private readonly IAuthService _authService;
+        public UserService(AppDbContext context, IAuthService authService)
         {
             _context = context;
-            _jwtService = jwtService;
+            _authService = authService;
         }
+
 
         public async Task<User?> GetUserByEmailAsync(string email)
         {
@@ -62,7 +62,8 @@ namespace TaskManagerApp.Services.Implementations
                 throw new Exception("Invalid credentials.");
 
             // Generate JWT token
-            string token = _jwtService.GenerateToken(user);
+            string token = _authService.GenerateToken(user);
+
 
             return token;
         }
