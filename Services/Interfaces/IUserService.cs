@@ -1,6 +1,11 @@
-﻿namespace TaskManagerApp.Services.Interfaces
+﻿using TaskManagerApp.DTOs;
+using TaskManagerApp.Models;
+
+namespace TaskManagerApp.Services.Interfaces
 {
-    public class IUserService
+    public interface IUserService
     {
+        Task<User> RegisterUserAsync(UserRegisterDto request);
+        Task<User?> GetUserByEmailAsync(string email);
     }
 }
