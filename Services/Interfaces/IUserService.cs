@@ -7,5 +7,6 @@ namespace TaskManagerApp.Services.Interfaces
     {
         Task<User> RegisterUserAsync(UserRegisterDto request);
         Task<User?> GetUserByEmailAsync(string email);
+        Task<string> LoginUserAsync(UserLoginDto request);  // Added for login
     }
 }

@@ -38,5 +38,24 @@ namespace TaskManagerApp.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] UserLoginDto request)
+        {
+            try
+            {
+                var token = await _userService.LoginUserAsync(request);
+                return Ok(new
+                {
+                    message = "Login successful!",
+                    token = token
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
     }
 }

@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using TaskManagerApp.Data;
 using TaskManagerApp.DTOs;
+using TaskManagerApp.Helpers;
 using TaskManagerApp.Models;
 using TaskManagerApp.Services.Interfaces;
 
@@ -11,9 +12,11 @@ namespace TaskManagerApp.Services.Implementations
     {
         private readonly AppDbContext _context;
 
-        public UserService(AppDbContext context)
+        private readonly JwtService _jwtService;
+        public UserService(AppDbContext context, JwtService jwtService)
         {
             _context = context;
+            _jwtService = jwtService;
         }
 
         public async Task<User?> GetUserByEmailAsync(string email)
@@ -45,6 +48,23 @@ namespace TaskManagerApp.Services.Implementations
             await _context.SaveChangesAsync();
 
             return newUser;
+        }
+
+        public async Task<string> LoginUserAsync(UserLoginDto request)
+        {
+            var user = await GetUserByEmailAsync(request.Email);
+            if (user == null)
+                throw new Exception("User not found.");
+
+            // Verify password
+            bool isPasswordValid = BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash);
+            if (!isPasswordValid)
+                throw new Exception("Invalid credentials.");
+
+            // Generate JWT token
+            string token = _jwtService.GenerateToken(user);
+
+            return token;
         }
     }
 }
