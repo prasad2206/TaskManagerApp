@@ -12,5 +12,7 @@ namespace TaskManagerApp.Data
 
         // DbSets represent tables in the database
         public DbSet<User> Users { get; set; }
+        public DbSet<TaskItem> Tasks { get; set; }
+
     }
 }
