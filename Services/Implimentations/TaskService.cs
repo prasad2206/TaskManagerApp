@@ -58,9 +58,22 @@ namespace TaskManagerApp.Services.Implementations
             var task = await _context.Tasks.FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
             if (task == null) return false;
 
+            // If non-admin tries to delete someone else's task
+            if (task.UserId != userId)
+                return false;
+
             _context.Tasks.Remove(task);
             await _context.SaveChangesAsync();
             return true;
         }
+
+        public async Task<List<TaskItem>> GetAllTasksAsync()
+        {
+            return await _context.Tasks
+                .Include(t => t.User)
+                .OrderByDescending(t => t.Id)
+                .ToListAsync();
+        }
+
     }
 }

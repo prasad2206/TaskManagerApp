@@ -68,5 +68,27 @@ namespace TaskManagerApp.Controllers
 
             return Ok(new { message = "Task deleted successfully" });
         }
+
+        // ✅ Admin Only - Get All Tasks
+        [HttpGet("all")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetAllTasks()
+        {
+            var tasks = await _taskService.GetAllTasksAsync();
+            return Ok(tasks.Select(t => new
+            {
+                t.Id,
+                t.Title,
+                t.Status,
+                t.DueDate,
+                User = new
+                {
+                    t.User?.Id,
+                    t.User?.Name,
+                    t.User?.Email
+                }
+            }));
+        }
+
     }
 }

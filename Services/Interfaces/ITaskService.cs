@@ -9,5 +9,7 @@ namespace TaskManagerApp.Services.Interfaces
         Task<List<TaskItem>> GetTasksByUserAsync(int userId);
         Task<TaskItem?> UpdateTaskAsync(int id, int userId, TaskUpdateDto dto);
         Task<bool> DeleteTaskAsync(int id, int userId);
+        Task<List<TaskItem>> GetAllTasksAsync(); // Added for admin
+
     }
 }
