@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using TaskManagerApp.DTOs;
 using TaskManagerApp.Services.Interfaces;
+using TaskManagerApp.Helpers;
 
 namespace TaskManagerApp.Controllers
 {
@@ -19,12 +20,13 @@ namespace TaskManagerApp.Controllers
             _taskService = taskService;
             _authService = authService;
         }
+        
 
         // Create Task
         [HttpPost("create")]
         public async Task<IActionResult> CreateTask([FromBody] TaskCreateDto dto)
         {
-            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var userId = UserHelper.GetUserIdFromClaims(User);
             var task = await _taskService.CreateTaskAsync(userId, dto);
 
             return Ok(new
@@ -38,7 +40,7 @@ namespace TaskManagerApp.Controllers
         [HttpGet]
         public async Task<IActionResult> GetTasks()
         {
-            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var userId = UserHelper.GetUserIdFromClaims(User);
             var tasks = await _taskService.GetTasksByUserAsync(userId);
             return Ok(tasks);
         }
@@ -47,7 +49,7 @@ namespace TaskManagerApp.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateTask(int id, [FromBody] TaskUpdateDto dto)
         {
-            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var userId = UserHelper.GetUserIdFromClaims(User);
             var updated = await _taskService.UpdateTaskAsync(id, userId, dto);
 
             if (updated == null)
@@ -60,7 +62,7 @@ namespace TaskManagerApp.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTask(int id)
         {
-            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var userId = UserHelper.GetUserIdFromClaims(User);
             var deleted = await _taskService.DeleteTaskAsync(id, userId);
 
             if (!deleted)
@@ -87,8 +89,8 @@ namespace TaskManagerApp.Controllers
                     t.User?.Name,
                     t.User?.Email
                 }
+
             }));
         }
-
     }
 }
