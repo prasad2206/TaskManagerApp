@@ -29,7 +29,7 @@ export default function Register() {
   }
     try {
       // ✅ Send full formData directly
-      const response = await API.post("/register", formData);
+      const response = await API.post("/auth/register", formData);
 
       if (response.status === 200 || response.status === 201) {
         toast.success("Registration successful!");

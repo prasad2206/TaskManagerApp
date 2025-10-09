@@ -26,7 +26,7 @@ export default function Login() {
   e.preventDefault();
 
   try {
-    const response = await API.post("/login", formData);
+    const response = await API.post("/auth/login", formData);
 
     if (response.data && response.data.token) {
       localStorage.setItem("token", response.data.token);
