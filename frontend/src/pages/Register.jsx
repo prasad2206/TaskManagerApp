@@ -1,5 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify"; // optional
+import API from "../services/api"; // ✅ use your axios instance
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 
 export default function Register() {
   const navigate = useNavigate();
@@ -9,14 +14,39 @@ export default function Register() {
     password: "",
   });
 
+  // Handle field changes
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  // Handle submit
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Register data:", formData);
-    // ✅ next task me yahan API call add karenge
+  // ✅ Password validation before sending request
+  if (formData.password.length < 6) {
+    toast.error("Password must be at least 6 characters long!");
+    return;
+  }
+    try {
+      // ✅ Send full formData directly
+      const response = await API.post("/register", formData);
+
+      if (response.status === 200 || response.status === 201) {
+        toast.success("Registration successful!");
+        toast.success("Registration successful! Please login now.");
+        navigate("/login");
+      }
+    } catch (error) {
+      console.error("Register error:", error);
+
+      if (error.response) {
+        // Backend responded with an error (like BadRequest)
+        toast.error(error.response.data.message || "Registration failed!");
+      } else {
+        // No response from server (network or CORS)
+        toast.error("Server not responding!");
+      }
+    }
   };
 
   return (
