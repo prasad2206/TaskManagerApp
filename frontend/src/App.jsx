@@ -1,11 +1,23 @@
 import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Navbar from "./components/Navbar";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
+import AuthProvider from "./context/AuthContext";
 
 export default function App() {
   return (
-    <div style={{ padding: 24, fontFamily: "Inter, system-ui, sans-serif" }}>
-      <h1>Task Manager — Frontend (Vite + React)</h1>
-      <p>If you see this, Vite React app is running successfully.</p>
-      <p>Next: we'll add routing, auth pages and API integration.</p>
-    </div>
+    <AuthProvider>
+      <Router>
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }
