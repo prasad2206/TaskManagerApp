@@ -18,6 +18,7 @@ namespace TaskManagerApp.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] UserRegisterDto request)
         {
+            Console.WriteLine("🔥 Register endpoint hit!");
             try
             {
                 var user = await _userService.RegisterUserAsync(request);

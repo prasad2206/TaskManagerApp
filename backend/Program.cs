@@ -12,10 +12,31 @@ using TaskManagerApp.Validations;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// CORS setup
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactDev",
+        policy => policy
+            .WithOrigins("https://localhost:5173")
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials());
+});
+
 
 // Add services to the container.
 
 builder.Services.AddControllers();
+
+// Kestrel HTTPS with same certificate as frontend
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(7288, listenOptions =>
+    {
+        listenOptions.UseHttps("F:/PortfolioProjects/TaskManagerApp/frontend/cert.pem",
+                               "F:/PortfolioProjects/TaskManagerApp/frontend/key.pem");
+    });
+});
 
 // Add FluentValidation 
 builder.Services.AddFluentValidationAutoValidation()
@@ -75,6 +96,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseCors("AllowReactDev");
 
 app.UseHttpsRedirection();
 
