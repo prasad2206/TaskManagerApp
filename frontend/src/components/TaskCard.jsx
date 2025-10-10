@@ -46,7 +46,7 @@ export default function TaskCard({ task, onTaskUpdated }) {
       }
     } catch (err) {
       console.error("Delete error:", err);
-      alert("Failed to delete task. Please try again.");
+      toast.error("Failed to delete task. Please try again.");
     } finally {
       setDeleting(false);
     }

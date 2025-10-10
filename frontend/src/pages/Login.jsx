@@ -1,83 +1,80 @@
-import React, { useState } from "react";
+// src/pages/Login.jsx
+import React, { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../services/api";
-import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import { toast } from "react-toastify"; // optional
+import { toast } from "react-toastify";
+
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+
+const schema = yup.object({
+  email: yup.string().required("Email is required").email("Invalid email"),
+  password: yup.string().required("Password is required"),
+}).required();
 
 export default function Login() {
+  const navigate = useNavigate();
   const { login } = useContext(AuthContext);
 
-  const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
+  const { register, handleSubmit, formState: { errors, isSubmitting }, setError } = useForm({
+    resolver: yupResolver(schema),
+    defaultValues: { email: "", password: "" }
   });
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
+  const onSubmit = async (data) => {
     try {
-      const response = await API.post("/auth/login", formData);
-
-      if (response.data && response.data.token) {
-        login(response.data.token); // use context call
-        toast.success("Login successful!");
-        navigate("/"); // redirect to dashboard
+      const res = await API.post("/auth/login", data);
+      if (res?.data?.token) {
+        login(res.data.token); // AuthContext handles localStorage
+        toast.success("Login Successful!");
+        navigate("/");
       } else {
-        toast.error("Invalid response from server");
+        toast.error("Login failed: invalid server response");
       }
-    } catch (error) {
-      console.log(error);
-      if (error.response && error.response.data) {
-        toast.error(error.response.data.message || "Login failed!");
+    } catch (err) {
+      console.error(err);
+      const resp = err?.response?.data;
+      if (resp?.message) {
+        // show as form error on password/email
+        setError("password", { type: "server", message: resp.message });
       } else {
-        toast.error("Server not responding!");
+        toast.error("Login failed. Try again.");
       }
     }
   };
 
   return (
-    <div className="container mt-5" style={{ maxWidth: 400 }}>
-      <h3 className="mb-3 text-center">Login to Task Manager</h3>
+    <div className="container mt-5" style={{ maxWidth: 420 }}>
+      <h3 className="mb-4 text-center">Login</h3>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit(onSubmit)} noValidate>
         <div className="mb-3">
-          <label className="form-label">Email Address</label>
+          <label className="form-label">Email</label>
           <input
             type="email"
-            className="form-control"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            placeholder="example@email.com"
-            required
+            className={`form-control ${errors.email ? "is-invalid" : ""}`}
+            {...register("email")}
+            placeholder="you@example.com"
           />
+          <div className="invalid-feedback">{errors.email?.message}</div>
         </div>
 
         <div className="mb-3">
           <label className="form-label">Password</label>
           <input
             type="password"
-            className="form-control"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            placeholder="••••••••"
-            required
+            className={`form-control ${errors.password ? "is-invalid" : ""}`}
+            {...register("password")}
+            placeholder="Your password"
           />
+          <div className="invalid-feedback">{errors.password?.message}</div>
         </div>
 
-        <button type="submit" className="btn btn-primary w-100">
-          Login
+        <button type="submit" className="btn btn-primary w-100" disabled={isSubmitting}>
+          {isSubmitting ? "Logging in..." : "Login"}
         </button>
-
         <p className="mt-3 text-center">
           Don’t have an account?{" "}
           <span

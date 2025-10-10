@@ -68,9 +68,7 @@ export default function Dashboard() {
             {loading ? "Refreshing..." : "Refresh"}
           </button>
 
-          <button className="btn btn-primary" onClick={() => navigate("/tasks/new")}>
-            Add Task
-          </button>
+          {/* Add Task moved to Navbar for authenticated users */}
         </div>
       </div>
 

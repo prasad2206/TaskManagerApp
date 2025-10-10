@@ -1,133 +1,115 @@
-import React, { useState, useEffect } from "react";
+// src/components/EditTaskModal.jsx
+import React, { useEffect, useRef } from "react";
 import API from "../services/api";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+
+const todayStr = new Date().toISOString().split("T")[0];
+
+const schema = yup.object({
+  title: yup.string().required("Title is required").min(3),
+  description: yup.string().max(1000),
+  status: yup.string().oneOf(["Pending","Completed"]).required(),
+  dueDate: yup.string().nullable().test("is-valid-or-future", "Due date must be today or later", value => {
+    if (!value) return true;
+    return new Date(value) >= new Date(todayStr);
+  })
+}).required();
 
 export default function EditTaskModal({ show, onClose, task, onTaskUpdated }) {
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    status: "Pending",
-    dueDate: "",
+  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm({
+    resolver: yupResolver(schema),
+    defaultValues: { title: "", description: "", status: "Pending", dueDate: "" }
   });
+  const navigate = useNavigate();
+  const timeoutRef = useRef(null);
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-
-  // pre-fill data when modal opens
   useEffect(() => {
     if (task) {
-      setFormData({
+      reset({
         title: task.title || "",
         description: task.description || "",
         status: task.status || "Pending",
-        dueDate: task.dueDate ? task.dueDate.split("T")[0] : "",
+        dueDate: task.dueDate ? task.dueDate.split("T")[0] : ""
       });
     }
-  }, [task]);
+  }, [task, reset]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-    setSuccess("");
-
+  const onSubmit = async (data) => {
     try {
-      const response = await API.put(`/task/${task.id}`, formData);
-      if (response.status === 200) {
-        setSuccess("Task updated successfully!");
-        setTimeout(() => {onTaskUpdated(); onClose(); }, 1200);
+      const res = await API.put(`/task/${task.id}`, data);
+      if (res.status === 200) {
+        // Show global toast, keep modal open briefly, then close and navigate to dashboard
+        toast.success("Task Updated successfully!");
+
+        // call onTaskUpdated so parent can refresh tasks
+        onTaskUpdated();
+
+        // wait 1s then close modal and navigate to dashboard
+        timeoutRef.current = setTimeout(() => {
+          onClose();
+          navigate("/");
+        }, 1000);
       }
     } catch (err) {
       console.error(err);
-      const msg = err?.response?.data?.message || "Failed to update task!";
-      setError(msg);
-    } finally {
-      setLoading(false);
+      toast.error(err?.response?.data?.message || "Failed to update task");
     }
   };
+
+  // cleanup timeout if modal unmounts
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   if (!show) return null;
 
   return (
-    <div
-      className="modal fade show d-block"
-      tabIndex="-1"
-      style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
-    >
+    <div className="modal fade show d-block" tabIndex="-1" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
       <div className="modal-dialog">
         <div className="modal-content">
           <div className="modal-header">
             <h5 className="modal-title">Edit Task</h5>
-            <button
-              type="button"
-              className="btn-close"
-              onClick={onClose}
-            ></button>
+            <button type="button" className="btn-close" onClick={onClose}></button>
           </div>
-
           <div className="modal-body">
-            {error && <div className="alert alert-danger">{error}</div>}
-            {success && <div className="alert alert-success">{success}</div>}
-
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit(onSubmit)} noValidate>
               <div className="mb-3">
                 <label className="form-label">Title</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleChange}
-                  required
-                />
+                <input className={`form-control ${errors.title ? "is-invalid" : ""}`} {...register("title")} />
+                <div className="invalid-feedback">{errors.title?.message}</div>
               </div>
 
               <div className="mb-3">
                 <label className="form-label">Description</label>
-                <textarea
-                  className="form-control"
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                  rows="3"
-                ></textarea>
+                <textarea className={`form-control ${errors.description ? "is-invalid" : ""}`} rows="3" {...register("description")}></textarea>
+                <div className="invalid-feedback">{errors.description?.message}</div>
               </div>
 
               <div className="mb-3">
                 <label className="form-label">Status</label>
-                <select
-                  className="form-select"
-                  name="status"
-                  value={formData.status}
-                  onChange={handleChange}
-                >
+                <select className={`form-select ${errors.status ? "is-invalid" : ""}`} {...register("status")}>
                   <option value="Pending">Pending</option>
                   <option value="Completed">Completed</option>
                 </select>
+                <div className="invalid-feedback">{errors.status?.message}</div>
               </div>
 
               <div className="mb-3">
                 <label className="form-label">Due Date</label>
-                <input
-                  type="date"
-                  className="form-control"
-                  name="dueDate"
-                  value={formData.dueDate}
-                  onChange={handleChange}
-                />
+                <input type="date" className={`form-control ${errors.dueDate ? "is-invalid" : ""}`} {...register("dueDate")} />
+                <div className="invalid-feedback">{errors.dueDate?.message}</div>
               </div>
 
-              <button
-                type="submit"
-                className="btn btn-primary w-100"
-                disabled={loading}
-              >
-                {loading ? "Updating..." : "Update Task"}
+              <button className="btn btn-primary w-100" disabled={isSubmitting}>
+                {isSubmitting ? "Updating..." : "Update Task"}
               </button>
             </form>
           </div>
