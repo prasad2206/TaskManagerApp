@@ -39,7 +39,7 @@ export default function App() {
           <Route path="/register" element={<Register />} />
         </Routes>
       </Router>
-      <ToastContainer position="top-right" autoClose={3000} />
+      <ToastContainer position="top-right" autoClose={1500} />
       {/* Toast container for notifications */}
     </AuthProvider>
   );
