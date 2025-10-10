@@ -8,7 +8,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { toast } from "react-toastify"; // optional
 
 export default function Login() {
-  const { setUser } = useContext(AuthContext);
+  const { login } = useContext(AuthContext);
 
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -27,10 +27,9 @@ export default function Login() {
       const response = await API.post("/auth/login", formData);
 
       if (response.data && response.data.token) {
-        localStorage.setItem("token", response.data.token);
-        setUser({ token: response.data.token });
+        login(response.data.token); // use context call
         toast.success("Login successful!");
-        navigate("/");
+        navigate("/"); // redirect to dashboard
       } else {
         toast.error("Invalid response from server");
       }
@@ -46,7 +45,6 @@ export default function Login() {
 
   return (
     <div className="container mt-5" style={{ maxWidth: 400 }}>
-      
       <h3 className="mb-3 text-center">Login to Task Manager</h3>
 
       <form onSubmit={handleSubmit}>

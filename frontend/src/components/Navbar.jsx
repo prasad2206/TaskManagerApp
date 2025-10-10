@@ -3,31 +3,48 @@ import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
 export default function Navbar() {
-  const { user, logout } = useContext(AuthContext);
+  const { isAuthenticated, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
-
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark bg-dark px-4">
-      <div className="container-fluid">
-        <Link className="navbar-brand fw-bold" to="/">TaskManager</Link>
+    <nav className="navbar navbar-expand-lg navbar-dark bg-dark px-3">
+      <Link className="navbar-brand" to="/">
+        TaskManager
+      </Link>
 
-        <div className="d-flex">
-          {user ? (
-            <button onClick={handleLogout} className="btn btn-outline-light">
-              Logout
-            </button>
+      <div className="collapse navbar-collapse show">
+        <ul className="navbar-nav ms-auto">
+          {isAuthenticated ? (
+            <>
+              <li className="nav-item">
+                <button
+                  className="btn btn-outline-light btn-sm me-2"
+                  onClick={() => navigate("/tasks/new")}
+                >
+                  + Add Task
+                </button>
+              </li>
+              <li className="nav-item">
+                <button className="btn btn-danger btn-sm" onClick={logout}>
+                  Logout
+                </button>
+              </li>
+            </>
           ) : (
             <>
-              <Link className="btn btn-outline-light me-2" to="/login">Login</Link>
-              <Link className="btn btn-light" to="/register">Register</Link>
+              <li className="nav-item">
+                <Link className="nav-link" to="/login">
+                  Login
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link className="nav-link" to="/register">
+                  Register
+                </Link>
+              </li>
             </>
           )}
-        </div>
+        </ul>
       </div>
     </nav>
   );
