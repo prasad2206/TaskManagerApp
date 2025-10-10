@@ -67,7 +67,8 @@ export default function Dashboard() {
           {tasks.length === 0 ? (
             <div className="alert alert-info">No tasks yet. Click <strong>Add Task</strong> to create one.</div>
           ) : (
-            <TaskList tasks={tasks} />
+            <TaskList tasks={tasks} onTaskUpdated={fetchTasks} />
+
           )}
         </>
       )}
