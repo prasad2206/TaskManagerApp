@@ -1,3 +1,4 @@
+// src/pages/Dashboard.jsx
 import React, { useEffect, useState, useContext } from "react";
 import API from "../services/api";
 import TaskList from "../components/TaskList";
@@ -8,6 +9,7 @@ export default function Dashboard() {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [filterStatus, setFilterStatus] = useState("All"); // All | Pending | Completed
   const { logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -15,17 +17,15 @@ export default function Dashboard() {
     setLoading(true);
     setError("");
     try {
-      const response = await API.get("/task"); // GET /api/task
+      const response = await API.get("/task"); // existing endpoint
       setTasks(response.data || []);
     } catch (err) {
       console.error("Fetch tasks error:", err);
-      // Handle unauthorized -> logout & redirect to login
       if (err?.response?.status === 401) {
         logout();
         navigate("/login");
         return;
       }
-      // Show backend message if provided
       const msg = err?.response?.data?.message || "Unable to fetch tasks. Try again.";
       setError(msg);
     } finally {
@@ -38,14 +38,36 @@ export default function Dashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Client-side filter
+  const filteredTasks = tasks.filter((t) => {
+    if (!filterStatus || filterStatus === "All") return true;
+    return (t.status || "").toLowerCase() === filterStatus.toLowerCase();
+  });
+
   return (
     <div className="container mt-4">
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h3>Your Tasks</h3>
-        <div>
+
+        <div className="d-flex align-items-center">
+          {/* Filter controls */}
+          <div className="btn-group me-3" role="group" aria-label="status filter">
+            {["All", "Pending", "Completed"].map((s) => (
+              <button
+                key={s}
+                type="button"
+                className={`btn btn-sm ${filterStatus === s ? "btn-primary" : "btn-outline-secondary"}`}
+                onClick={() => setFilterStatus(s)}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+
           <button className="btn btn-outline-primary me-2" onClick={fetchTasks} disabled={loading}>
             {loading ? "Refreshing..." : "Refresh"}
           </button>
+
           <button className="btn btn-primary" onClick={() => navigate("/tasks/new")}>
             Add Task
           </button>
@@ -64,11 +86,12 @@ export default function Dashboard() {
 
       {!loading && !error && (
         <>
-          {tasks.length === 0 ? (
-            <div className="alert alert-info">No tasks yet. Click <strong>Add Task</strong> to create one.</div>
+          {filteredTasks.length === 0 ? (
+            <div className="alert alert-info">
+              No tasks found for "{filterStatus}". Try switching filter or add a new task.
+            </div>
           ) : (
-            <TaskList tasks={tasks} onTaskUpdated={fetchTasks} />
-
+            <TaskList tasks={filteredTasks} onTaskUpdated={fetchTasks} />
           )}
         </>
       )}
