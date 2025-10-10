@@ -7,9 +7,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { toast } from "react-toastify"; // optional
 
-
 export default function Login() {
-
   const { setUser } = useContext(AuthContext);
 
   const navigate = useNavigate();
@@ -23,32 +21,32 @@ export default function Login() {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  try {
-    const response = await API.post("/auth/login", formData);
+    try {
+      const response = await API.post("/auth/login", formData);
 
-    if (response.data && response.data.token) {
-      localStorage.setItem("token", response.data.token);
-      setUser({ token: response.data.token });
-      toast.success("Login successful!");
-      navigate("/");
-    } else {
-      toast.error("Invalid response from server");
+      if (response.data && response.data.token) {
+        localStorage.setItem("token", response.data.token);
+        setUser({ token: response.data.token });
+        toast.success("Login successful!");
+        navigate("/");
+      } else {
+        toast.error("Invalid response from server");
+      }
+    } catch (error) {
+      console.log(error);
+      if (error.response && error.response.data) {
+        toast.error(error.response.data.message || "Login failed!");
+      } else {
+        toast.error("Server not responding!");
+      }
     }
-  } catch (error) {
-    console.log(error);
-    if (error.response && error.response.data) {
-      toast.error(error.response.data.message || "Login failed!");
-    } else {
-      toast.error("Server not responding!");
-    }
-  }
-};
+  };
 
   return (
     <div className="container mt-5" style={{ maxWidth: 400 }}>
-      <ToastContainer /> {/* Toast container for notifications */}
+      
       <h3 className="mb-3 text-center">Login to Task Manager</h3>
 
       <form onSubmit={handleSubmit}>

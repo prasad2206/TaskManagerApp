@@ -6,6 +6,9 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import AuthProvider from "./context/AuthContext";
+import AddTaskForm from "./components/AddTaskForm";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function App() {
   return (
@@ -22,12 +25,22 @@ export default function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/tasks/new"
+            element={
+              <ProtectedRoute>
+                <AddTaskForm />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Public Routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
         </Routes>
       </Router>
+      <ToastContainer position="top-right" autoClose={3000} />
+      {/* Toast container for notifications */}
     </AuthProvider>
   );
 }
