@@ -4,6 +4,7 @@ services:
     env: dotnet
     plan: free
     branch: main
+    rootDir: backend
     buildCommand: "dotnet restore && dotnet publish -c Release -o out"
     startCommand: "dotnet out/TaskManagerApp.dll"
     envVars:
