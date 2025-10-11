@@ -1,7 +1,6 @@
 services:
   - type: web
     name: taskmanager-backend
-    runtime: docker
     plan: free
     branch: main
     rootDir: backend
