@@ -15,13 +15,18 @@ var builder = WebApplication.CreateBuilder(args);
 // CORS setup
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowReactDev",
-        policy => policy
-            .WithOrigins("https://localhost:5173")
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials());
+    options.AddPolicy("AllowSpecific", policy =>
+    {
+        policy.WithOrigins(
+            "https://localhost:5173"  // dev
+            
+        )
+        .AllowAnyHeader()
+        .AllowAnyMethod();
+    });
 });
+
+
 
 
 // Add services to the container.
@@ -46,9 +51,10 @@ builder.Services.AddFluentValidationAutoValidation()
 builder.Services.AddValidatorsFromAssemblyContaining<UserRegisterValidator>();
 
 
-// Configure Entity Framework Core with SQL Server
+// Configure Entity Framework Core with postgre SQL Server
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 
 // JWT Authentication Configuration
 var jwtKey = builder.Configuration["Jwt:Key"];
@@ -97,7 +103,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseCors("AllowReactDev");
+app.UseCors("AllowSpecific");
 
 app.UseHttpsRedirection();
 
