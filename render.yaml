@@ -1,7 +1,7 @@
 services:
   - type: web
     name: taskmanager-backend
-    env: dotnet
+    runtime: dotnet
     plan: free
     branch: main
     rootDir: backend
